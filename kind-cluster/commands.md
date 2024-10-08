@@ -1,35 +1,80 @@
 
-# Terminal Command History for K8s Kind Voting App
+# Terminal Command for K8s Kind Voting App
 
 ## 1. Creating and Managing Kubernetes Cluster with Kind
 
-- Clear terminal:
+- Create a bash script `install_kind.sh` for installing kind
   ```bash
-  clear
+  #!/bin/bash
+  # For AMD64 / x86_64
+  [ $(uname -m) = x86_64 ] && curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.20.0/kind-linux-amd64
+  chmod +x ./kind
+  sudo cp ./kind /usr/local/bin/kind
+  rm -rf kind
+  ```
+  
+- Give Exectuable permission to file
+  ```bash
+  chmod +x install_kind.sh
+  ```
+- Run the Script
+  ```bash
+  ./install_kind.sh
+  ```
+- Create a `config.yml` for installing cluster in Docker
+  ```bash
+  kind: Cluster
+  apiVersion: kind.x-k8s.io/v1alpha4
+
+  nodes:
+    - role: control-plane
+      image: kindest/node:v1.30.0
+    - role: worker
+      image: kindest/node:v1.30.0
+    - role: worker
+      image: kindest/node:v1.30.0
   ```
 
 - Create a 3-node Kubernetes cluster using Kind:
   ```bash
-  kind create cluster --config=config.yml
-  ```
-
-- Check cluster information:
-  ```bash
-  kubectl cluster-info --context kind-kind
-  kubectl get nodes
-  kind get clusters
+  kind create cluster --config=config.yml --name my-cluster
   ```
 
 ---
 
 ## 2. Installing kubectl
 
-- Download `kubectl` for managing Kubernetes clusters:
+- Install kubectl using `install_kubectl.sh` script
   ```bash
-  curl -o kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/1.19.6/2021-01-05/bin/linux/amd64/kubectl
-  chmod +x ./kubectl
-  sudo mv ./kubectl /usr/local/bin
-  kubectl version --short --client
+  #!/bin/bash
+
+  # Variables
+  VERSION="v1.30.0"
+  URL="https://dl.k8s.io/release/${VERSION}/bin/linux/amd64/kubectl"
+  INSTALL_DIR="/usr/local/bin"
+
+  # Download and install kubectl
+  curl -LO "$URL"
+  chmod +x kubectl
+  sudo mv kubectl $INSTALL_DIR/
+  kubectl version --client
+
+  # Clean up
+  rm -f kubectl
+
+  echo "kubectl installation complete."
+  ```
+
+- Give Exectuable permission to file
+  ```bash
+  chmod +x install_kubectl.sh
+  ```
+
+- Check cluster information:
+  ```bash
+  kubectl cluster-info 
+  kubectl get nodes
+  kind get clusters
   ```
 
 ---
@@ -44,6 +89,50 @@
 - List all Kubernetes pods in all namespaces:
   ```bash
   kubectl get pods -A
+  ```
+---
+
+## 6. Installing Argo CD
+
+- Create a namespace for Argo CD:
+  ```bash
+  kubectl create namespace argocd
+  ```
+
+- Apply the Argo CD manifest:
+  ```bash
+  kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+  ```
+  
+- Check pods in Argo CD namespace:
+  ```bash
+  kubectl get pods -n argocd
+  ```
+
+- Check services in Argo CD namespace:
+  ```bash
+  kubectl get svc -n argocd
+  ```
+
+- Expose Argo CD server using NodePort:
+  ```bash
+  kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "NodePort"}}'
+  ```
+
+- Forward ports to access Argo CD server:
+  ```bash
+  kubectl port-forward -n argocd service/argocd-server 8443:443 --address 0.0.0.0 &
+  ```
+**Note:-** Enable port 8443 on AWS Instance Security Groups
+
+
+---
+
+## 9. Argo CD Initial Admin Password
+
+- Retrieve Argo CD admin password:
+  ```bash
+  kubectl get secret -n argocd argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d && echo
   ```
 
 ---
@@ -84,36 +173,6 @@
   cat Dockerfile
   cat generate-votes.sh
   ```
-
----
-
-## 6. Installing Argo CD
-
-- Create a namespace for Argo CD:
-  ```bash
-  kubectl create namespace argocd
-  ```
-
-- Apply the Argo CD manifest:
-  ```bash
-  kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
-  ```
-
-- Check services in Argo CD namespace:
-  ```bash
-  kubectl get svc -n argocd
-  ```
-
-- Expose Argo CD server using NodePort:
-  ```bash
-  kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "NodePort"}}'
-  ```
-
-- Forward ports to access Argo CD server:
-  ```bash
-  kubectl port-forward -n argocd service/argocd-server 8443:443 &
-  ```
-
 ---
 
 ## 7. Deleting Kubernetes Cluster
@@ -136,17 +195,7 @@
   ```bash
   kubectl -n kubernetes-dashboard create token admin-user
   ```
-
----
-
-## 9. Argo CD Initial Admin Password
-
-- Retrieve Argo CD admin password:
-  ```bash
-  kubectl get secret -n argocd argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d && echo
-  ```
-
-
+  
 ---
 
 ## 10. Install HELM
