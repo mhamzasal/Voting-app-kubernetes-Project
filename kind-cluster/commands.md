@@ -128,7 +128,7 @@
 
 ---
 
-## 9. Argo CD Initial Admin Password
+## 4. Argo CD Initial Admin Password
 
 - Retrieve Argo CD admin password:
   ```bash
@@ -137,22 +137,12 @@
 
 ---
 
-## 4. Cloning and Running the Example Voting App
+## 5. Cloning and Running the Example Voting App
 
 - Clone the voting app repository:
   ```bash
-  git clone https://github.com/dockersamples/example-voting-app.git
-  cd example-voting-app/
-  ```
-
-- Apply Kubernetes YAML specifications for the voting app:
-  ```bash
-  kubectl apply -f k8s-specifications/
-  ```
-
-- List all Kubernetes resources:
-  ```bash
-  kubectl get all
+  git clone https://github.com/harshitsahu2311/Voting-app-kubernetes-Project.git
+  cd Voting-app-kubernetes-Project/
   ```
 
 - Forward local ports for accessing the voting and result apps:
@@ -163,85 +153,58 @@
 
 ---
 
-## 5. Managing Files in Example Voting App
-
-- Navigate and view files:
-  ```bash
-  cd ..
-  cd seed-data/
-  ls
-  cat Dockerfile
-  cat generate-votes.sh
-  ```
----
-
-## 7. Deleting Kubernetes Cluster
-
-- Delete the Kind cluster:
-  ```bash
-  kind delete cluster --name=kind
-  ```
-
----
-
-## 8. Installing Kubernetes Dashboard
+## 6. Installing Kubernetes Dashboard
 
 - Deploy Kubernetes dashboard:
   ```bash
   kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.7.0/aio/deploy/recommended.yaml
   ```
 
+- Create a manifest `dashboard-adminuser.yml` for creation of `admin-user`:
+  ```bash
+  apiVersion: v1
+  kind: ServiceAccount
+  metadata:
+    name: admin-user
+    namespace: kubernetes-dashboard
+  ---
+  apiVersion: rbac.authorization.k8s.io/v1
+  kind: ClusterRoleBinding
+  metadata:
+    name: admin-user
+  roleRef:
+    apiGroup: rbac.authorization.k8s.io
+    kind: ClusterRole
+    name: cluster-admin
+  subjects:
+    - kind: ServiceAccount
+      name: admin-user
+      namespace: kubernetes-dashboard
+  ```
+
+- Run the manifest file:
+  ```bash
+  kubectl apply -f dashboard-adminuser.yml
+  ```
+  
+- Check the `admin-user` Service:
+  ```bash
+  kubectl get svc -n kubernetes-dashboard
+  ```
+
 - Create a token for dashboard access:
   ```bash
   kubectl -n kubernetes-dashboard create token admin-user
   ```
-  
----
+  Copy the Token
 
-## 10. Install HELM
-
-```bash
-curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
-chmod 700 get_helm.sh
-./get_helm.sh
-```
+- Forward local ports for accessing the kubernets dashboard:
+  ```bash
+  kubectl port-forward -n kubernetes-dashboard svc/kubernetes-dashboard 8080:443 --address 0.0.0.0 &
+  ```
 
 ---
 
-## 11. Install Kube Prometheus Stack
-
-```bash
-helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-helm repo add stable https://charts.helm.sh/stable
-helm repo update
-kubectl create namespace monitoring
-helm install kind-prometheus prometheus-community/kube-prometheus-stack --namespace monitoring --set prometheus.service.nodePort=30000 --set prometheus.service.type=NodePort --set grafana.service.nodePort=31000 --set grafana.service.type=NodePort --set alertmanager.service.nodePort=32000 --set alertmanager.service.type=NodePort --set prometheus-node-exporter.service.nodePort=32001 --set prometheus-node-exporter.service.type=NodePort
-kubectl get svc -n monitoring
-kubectl get namespace
-```
-
----
-
-```bash
-kubectl port-forward svc/kind-prometheus-kube-prome-prometheus -n monitoring 9090:9090 --address=0.0.0.0 &
-kubectl port-forward svc/kind-prometheus-grafana -n monitoring 31000:80 --address=0.0.0.0 &
-```
-
-
----
-
-## 12. Prometheus Queries
-
-```bash
-sum (rate (container_cpu_usage_seconds_total{namespace="default"}[1m])) / sum (machine_cpu_cores) * 100
-
-sum (container_memory_usage_bytes{namespace="default"}) by (pod)
-
-
-sum(rate(container_network_receive_bytes_total{namespace="default"}[5m])) by (pod)
-sum(rate(container_network_transmit_bytes_total{namespace="default"}[5m])) by (pod)
-
-```
 
 
 ---
