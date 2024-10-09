@@ -1,4 +1,4 @@
-# K8s Kind Voting App
+# ☸️Voting App Kubernetes Project
 
 A comprehensive guide for setting up a Kubernetes cluster using Kind on an AWS EC2 instance, installing and configuring Argo CD, and deploying applications using Argo CD.
 
@@ -16,7 +16,11 @@ This guide covers the steps to:
 
 ## Architecture
 
-![Architecture diagram](k8s-kind-voting-app.png)
+![Architecture diagram](https://github.com/harshitsahu2311/Voting-app-kubernetes-Project/blob/main/you-ezgif.com-crop.gif)
+
+## Monitoring
+
+![kubernetes-dashboard](https://github.com/harshitsahu2311/Voting-app-kubernetes-Project/blob/main/Screenshot%202024-10-09%20154634.png)
 
 ## Observability
 
