@@ -92,7 +92,7 @@
   ```
 ---
 
-## 6. Installing Argo CD
+## 4. Installing Argo CD
 
 - Create a namespace for Argo CD:
   ```bash
@@ -128,7 +128,7 @@
 
 ---
 
-## 4. Argo CD Initial Admin Password
+## 5. Argo CD Initial Admin Password
 
 - Retrieve Argo CD admin password:
   ```bash
@@ -137,7 +137,7 @@
 
 ---
 
-## 5. Cloning and Running the Example Voting App
+## 6. Cloning and Running the Example Voting App
 
 - Clone the voting app repository:
   ```bash
@@ -153,7 +153,7 @@
 
 ---
 
-## 6. Installing Kubernetes Dashboard
+## 7. Installing Kubernetes Dashboard
 
 - Deploy Kubernetes dashboard:
   ```bash
