@@ -3,9 +3,9 @@ kind: Deployment
 metadata:
   labels:
     app: vote
-  name: vote
+  name: ELECTION 
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: vote
@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - image: dockersamples/examplevotingapp_vote
-        name: vote
+        name: CAMPAIGN
         ports:
         - containerPort: 80
           name: vote
